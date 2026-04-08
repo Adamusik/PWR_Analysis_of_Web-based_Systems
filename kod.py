@@ -73,14 +73,9 @@ data_all = data_all[data_all['speed_mbps'] < 200]
 # =========================
 
 plt.figure(figsize=(10, 6))
+# lekko pozmieniałem więc przydało by sie to jeszcze sprawdzić czy działa
+sns.histplot(data=data_all, x='speed_mbps', hue='year', bins=50, kde=True)
 
-sns.histplot(
-    data=data_all,
-    x='speed_mbps',
-    hue='year',
-    bins=50,
-    kde=True
-)
 
 plt.title('Porównanie prędkości Internetu: 2021 vs 2023')
 plt.xlabel('Prędkość [Mbps]')
@@ -148,6 +143,50 @@ sns.lmplot(
 )
 plt.title('Zmiana efektywności pakietowej: 2021 vs 2023')
 plt.show()
+
+
+# =========================
+# WYKRES 5/6 - Analiza Statystyczna i Korelacja Zmiennych (Heatmapy) - tego wcześniej nie było do sprawdzenia
+# =========================
+
+# Wybieramy numeryczne kolumny interesujące pod kątem oceny jakości połączenia sieciowego
+# zmieniłem kolumny pod nasz plik excel - chyba zadziała
+corr_cols = ['bytes_sec', 'bytes_total', 'packets_received', 'packets_sent', 'duration']
+# definiowanie zmiennych 
+valid_21 = data_dl_21[data_dl_21['successes'] == 1]
+valid_23 = data_dl_23[data_dl_23['successes'] == 1]
+
+# Obliczenie współczynników z próbki pomyślnych testów (successes == 1)
+pearson_21 = valid_21[corr_cols].corr(method='pearson')
+pearson_23 = valid_23[corr_cols].corr(method='pearson')
+
+spearman_21 = valid_21[corr_cols].corr(method='spearman')
+spearman_23 = valid_23[corr_cols].corr(method='spearman')
+
+# WIZUALIZACJA - KORELACJA LINIOWA PEARSONA
+fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+
+sns.heatmap(pearson_21, annot=True, fmt=".2f", cmap='coolwarm', vmin=-1, vmax=1, ax=axes[0])
+axes[0].set_title('Macierz Korelacji (Pearson) - 2021', fontsize=12)
+
+sns.heatmap(pearson_23, annot=True, fmt=".2f", cmap='coolwarm', vmin=-1, vmax=1, ax=axes[1])
+axes[1].set_title('Macierz Korelacji (Pearson) - 2023', fontsize=12)
+
+plt.tight_layout()
+plt.show()
+
+# WIZUALIZACJA - KORELACJA MONOTONICZNA SPEARMANA
+fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+
+sns.heatmap(spearman_21, annot=True, fmt=".2f", cmap='viridis', vmin=-1, vmax=1, ax=axes[0])
+axes[0].set_title('Macierz Korelacji (Spearman) - 2021', fontsize=14, pad=15)
+
+sns.heatmap(spearman_23, annot=True, fmt=".2f", cmap='viridis', vmin=-1, vmax=1, ax=axes[1])
+axes[1].set_title('Macierz Korelacji (Spearman) - 2023', fontsize=14, pad=15)
+
+plt.tight_layout()
+plt.show()
+
 
 # =========================
 # STATYSTYKI
